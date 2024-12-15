@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 
 function App() {
-
+//@ts-ignore
   const [messages, setMessages] = useState(["hi there", "hello"]);
   const wsRef = useRef();
+  const inputRef = useRef();
 
   useEffect(() => {
     const ws = new WebSocket("http://localhost:8080");
@@ -29,9 +30,9 @@ function App() {
           <div className="m-8"> <span className="bg-white text-black rounded p-4 m-8">{message}</span> </div>)}
       </div>
       <div className='w-full bg-white flex p-4'>
-        <input id="message" className="flex-1" />
+        <input ref={inputRef} id="message" className="flex-1" />
         <button onClick={() => {
-          const message = document.getElementById("message")?.value;
+          const message = inputRef.current?.value;
 
           wsRef.current.send(JSON.stringify({
             type: "chat",
