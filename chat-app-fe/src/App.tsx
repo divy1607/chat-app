@@ -1,34 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useRef, useState } from "react"
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const [messages, setMessages] = useState(["hi there", "hello"]);
+  const wsRef = useRef();
+
+  useEffect(() => {
+    const ws = new WebSocket("http://localhost:8080");
+    ws.onmessage = (event) => {
+      setMessages(m => [...m, event.data]);
+    }
+    wsRef.current = ws;
+    ws.onopen = () => {
+      ws.send(JSON.stringify({
+        type: "join",
+        payload: {
+          roomId: "red"
+        }
+      }))
+    }
+  }, [])
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className='h-screen bg-black'>
+      <br /><br /><br />
+      <div className='h-[80vh]'>
+        {messages.map(message =>
+          <div className="m-8"> <span className="bg-white text-black rounded p-4 m-8">{message}</span> </div>)}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div className='w-full bg-white flex p-4'>
+        <input id="message" className="flex-1" />
+        <button onClick={() => {
+          const message = document.getElementById("message")?.value;
+
+          wsRef.current.send(JSON.stringify({
+            type: "chat",
+            payload: {
+              message: message
+            }
+          }))
+
+        }} className='bg-purple-600 text-white p-4 pointer'> Send Message </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   )
 }
 
